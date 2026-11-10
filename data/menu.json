@@ -20,7 +20,7 @@
       "name": "Омлет с салатом, хлебом и начинкой на выбор",
       "price": 520,
       "tags": [],
-      "image": "/img/1.jfif",
+      "image": "./img/1.jpg",
       "description": "Сытный завтрак с омлетом, салатом и хлебом, начинку можно выбрать.",
       "composition": [
         "Омлет",
@@ -50,7 +50,7 @@
       "name": "Глазунья из трех яиц с цельнозерновым хлебом и сливочным маслом",
       "price": 380,
       "tags": ["vegetarian"],
-      "image": "/img/2.jfif",
+      "image": "./img/2.jpg",
       "description": "Классический завтрак из трёх яиц с хлебом и сливочным маслом.",
       "composition": [
         "Яйца",
@@ -73,7 +73,7 @@
       "name": "Рисовая каша на кокосовом молоке",
       "price": 380,
       "tags": ["vegan", "gluten-free"],
-      "image": "/img/3.jfif",
+      "image": "./img/3.jpg",
       "description": "Нежная рисовая каша на кокосовом молоке.",
       "composition": [
         "Рис",
@@ -117,7 +117,7 @@
       "name": "Цезарь с лососем",
       "price": 620,
       "tags": [],
-      "image": "/img/5.jfif",
+      "image": "./img/5.jpg",
       "description": "Салат с лососем в стиле цезарь.",
       "composition": [
         "Лосось",
@@ -141,7 +141,7 @@
       "name": "Медовик",
       "price": 450,
       "tags": ["vegetarian"],
-      "image": "/img/6.jfif",
+      "image": "./img/6.jpg",
       "description": "Классический медовый десерт.",
       "composition": [
         "Коржи",
@@ -164,7 +164,7 @@
       "name": "Шакшука с питой",
       "price": 520,
       "tags": ["vegetarian"],
-      "image": "/img/7.jfif"
+      "image": "./img/7.jpg"
     },
 
     {
@@ -173,7 +173,7 @@
       "name": "Сырные палочки с малиновым соусом",
       "price": 420,
       "tags": [],
-      "image": "/img/8.jfif"
+      "image": "./img/8.jpg"
     },
     {
       "id": 9,
@@ -181,7 +181,7 @@
       "name": "Римский сэндвич с курицей",
       "price": 450,
       "tags": [],
-      "image": "/img/9.jfif"
+      "image": "./img/9.jpg"
     },
     {
       "id": 10,
@@ -189,7 +189,7 @@
       "name": "Римский сэндвич с лососем",
       "price": 550,
       "tags": [],
-      "image": "/img/10.jfif"
+      "image": "./img/10.jpg"
     },
     {
       "id": 11,
@@ -205,7 +205,7 @@
       "name": "Хумус классический с оливками каламата и питой",
       "price": 480,
       "tags": ["vegan"],
-      "image": "/img/12.jfif"
+      "image": "./img/12.jpg"
     },
     {
       "id": 13,
@@ -213,7 +213,7 @@
       "name": "Шаурма из Печи",
       "price": 350,
       "tags": ["new"],
-      "image": "/img/13.jfif"
+      "image": "./img/13.jpg"
     },
 
     {
@@ -230,7 +230,7 @@
       "name": "Большой зелёный салат «Разные Зёрна» с имбирно-лаймовым соусом",
       "price": 480,
       "tags": ["vegan", "gluten-free"],
-      "image": "/img/15.jfif"
+      "image": "./img/15.jpg"
     },
     {
       "id": 16,
@@ -246,7 +246,7 @@
       "name": "Цезарь с лососем",
       "price": 620,
       "tags": [],
-      "image": "/img/17.jfif"
+      "image": "./img/17.jpg"
     },
     {
       "id": 18,
@@ -254,7 +254,7 @@
       "name": "Цезарь с курицей",
       "price": 490,
       "tags": [],
-      "image": "/img/18.jfif"
+      "image": "./img/18.jpg"
     },
     {
       "id": 19,
@@ -271,7 +271,7 @@
       "name": "Борщ",
       "price": 450,
       "tags": ["gluten-free"],
-      "image": "/img/20.jfif"
+      "image": "./img/20.jpg"
     },
     {
       "id": 21,
@@ -279,7 +279,7 @@
       "name": "Тыквенный крем-суп",
       "price": 390,
       "tags": ["vegetarian", "gluten-free"],
-      "image": "/img/21.jfif"
+      "image": "./img/21.jpg"
     },
     {
       "id": 22,
@@ -287,7 +287,7 @@
       "name": "Грибной крем-суп",
       "price": 390,
       "tags": [],
-      "image": "/img/22.jfif"
+      "image": "./img/22.jpg"
     },
     {
       "id": 23,
@@ -295,7 +295,7 @@
       "name": "Куриный суп-лапша",
       "price": 380,
       "tags": ["gluten-free"],
-      "image": "/img/23.jfif"
+      "image": "./img/23.jpg"
     },
     {
       "id": 24,
@@ -312,7 +312,7 @@
       "name": "Бургер с куриной котлетой и соусом «Тысяча островов»",
       "price": 450,
       "tags": [],
-      "image": "/img/25.jfif"
+      "image": "./img/25.jpg"
     },
     {
       "id": 26,
@@ -320,7 +320,7 @@
       "name": "Паста карбонара",
       "price": 590,
       "tags": [],
-      "image": "/img/26.jfif"
+      "image": "./img/26.jpg"
     },
     {
       "id": 27,
@@ -328,7 +328,7 @@
       "name": "Паста с печёными томатами и соусом песто",
       "price": 440,
       "tags": ["vegetarian"],
-      "image": "/img/27.jfif"
+      "image": "./img/27.jpg"
     },
     {
       "id": 28,
@@ -336,7 +336,7 @@
       "name": "Паста с вешенками",
       "price": 560,
       "tags": ["vegetarian"],
-      "image": "/img/28.jfif"
+      "image": "./img/28.jpg"
     },
     {
       "id": 29,
@@ -344,7 +344,7 @@
       "name": "Говяжья щёчка с картофельным пюре, печёной морковью и чипсом из кейла",
       "price": 890,
       "tags": ["gluten-free"],
-      "image": "/img/29.jfif"
+      "image": "./img/29.jpg"
     },
     {
       "id": 30,
@@ -352,7 +352,7 @@
       "name": "Котлетка куриная с картофельным пюре",
       "price": 550,
       "tags": [],
-      "image": "/img/30.jfif"
+      "image": "./img/30.jpg"
     },
     {
       "id": 31,
@@ -401,7 +401,7 @@
       "name": "Пицца Курица и перец",
       "price": 760,
       "tags": [],
-      "image": "/img/36.jfif"
+      "image": "./img/36.jpg"
     },
     {
       "id": 37,
@@ -409,7 +409,7 @@
       "name": "Пицца Овощи с песто",
       "price": 780,
       "tags": ["vegetarian", "new"],
-      "image": "/img/37.jfif"
+      "image": "./img/37.jpg"
     },
     {
       "id": 38,
@@ -451,7 +451,7 @@
       "name": "Наполеон",
       "price": 450,
       "tags": ["vegetarian", "new"],
-      "image": "/img/42.jfif"
+      "image": "./img/42.jpg"
     },
     {
       "id": 43,
@@ -459,7 +459,7 @@
       "name": "Медовик",
       "price": 450,
       "tags": ["vegetarian"],
-      "image": "/img/6.jfif"
+      "image": "./img/6.jpg"
     },
     {
       "id": 44,
@@ -467,7 +467,7 @@
       "name": "Яблочный крамбл",
       "price": 450,
       "tags": ["vegetarian"],
-      "image": "/img/44.jfif"
+      "image": "./img/44.jpg"
     },
     {
       "id": 45,
@@ -475,7 +475,7 @@
       "name": "Вишневый крамбл",
       "price": 450,
       "tags": ["vegetarian"],
-      "image": "/img/45.jfif"
+      "image": "./img/45.jpg"
     },
     {
       "id": 46,
@@ -483,7 +483,7 @@
       "name": "Шарик мороженого",
       "price": 230,
       "tags": ["vegetarian"],
-      "image": "/img/46.jfif"
+      "image": "./img/46.jpg"
     },
     {
       "id": 47,
@@ -491,7 +491,7 @@
       "name": "Аффогато",
       "price": 350,
       "tags": [],
-      "image": "/img/47.jfif"
+      "image": "./img/47.jpg"
     },
     {
       "id": 48,
@@ -507,7 +507,7 @@
       "name": "Панна-котта",
       "price": 450,
       "tags": [],
-      "image": "/img/49.jfif"
+      "image": "./img/49.jpg"
     },
     {
       "id": 50,
@@ -515,7 +515,7 @@
       "name": "Тирамису",
       "price": 450,
       "tags": [],
-      "image": "/img/50.jfif"
+      "image": "./img/50.jpg"
     },
     {
       "id": 51,
@@ -523,7 +523,7 @@
       "name": "Моти 3 шт.",
       "price": 590,
       "tags": [],
-      "image": "/img/51.jfif"
+      "image": "./img/51.jpg"
     },
 
     {
@@ -540,7 +540,7 @@
       "name": "По-тоскански",
       "price": 180,
       "tags": ["vegetarian"],
-      "image": "/img/53.jfif"
+      "image": "./img/53.jpg"
     },
     {
       "id": 54,
@@ -548,7 +548,7 @@
       "name": "Имбирный пряник",
       "price": 150,
       "tags": [],
-      "image": "/img/54.jfif"
+      "image": "./img/54.jpg"
     },
 
     {
@@ -557,7 +557,7 @@
       "name": "Макарошки с сыром",
       "price": 360,
       "tags": [],
-      "image": "/img/55.jfif"
+      "image": "./img/55.jpg"
     },
     {
       "id": 56,
@@ -565,7 +565,7 @@
       "name": "Картошка фри с кетчупом",
       "price": 320,
       "tags": ["vegetarian"],
-      "image": "/img/56.jfif"
+      "image": "./img/56.jpg"
     },
     {
       "id": 57,
@@ -573,7 +573,7 @@
       "name": "Куриные наггетсы",
       "price": 380,
       "tags": [],
-      "image": "/img/57.jfif"
+      "image": "./img/57.jpg"
     },
     {
       "id": 58,
@@ -614,7 +614,7 @@
       "name": "Капучино 250 мл",
       "price": 270,
       "tags": [],
-      "image": "/img/62.jfif"
+      "image": "./img/62.jpg"
     },
     {
       "id": 63,
@@ -622,7 +622,7 @@
       "name": "Капучино 350 мл",
       "price": 350,
       "tags": [],
-      "image": "/img/63.jfif",
+      "image": "./img/63.jpg",
       "description": "Классический капучино.",
       "composition": ["Эспрессо", "Молоко"],
       "modifiers": [
@@ -636,7 +636,7 @@
       "name": "Флэт уайт 250 мл",
       "price": 320,
       "tags": [],
-      "image": "/img/64.jfif"
+      "image": "./img/64.jpg"
     },
     {
       "id": 65,
@@ -741,7 +741,7 @@
       "name": "Римский сэндвич",
       "price": 450,
       "tags": [],
-      "image": "/img/77.jfif"
+      "image": "./img/77.jpg"
     },
     {
       "id": 78,
@@ -765,7 +765,7 @@
       "name": "Шаурма из Печи",
       "price": 350,
       "tags": ["new"],
-      "image": "/img/80.jfif"
+      "image": "./img/80.jpg"
     }
   ]
 }
