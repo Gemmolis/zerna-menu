@@ -37,7 +37,8 @@ const toast = document.getElementById("toast");
 const toastMessage = document.getElementById("toastMessage");
 
 // TODO: заменить на реальный URL бэкенда на проде
-const ORDER_WEBHOOK_URL = "http://localhost:8000/api/orders/from-site";
+const ORDER_WEBHOOK_URL =
+  "https://rewrite-heritage-void.ngrok-free.dev/api/orders/from-site";
 
 let menuData = [];
 let categoriesData = [];
