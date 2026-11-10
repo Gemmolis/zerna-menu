@@ -1045,7 +1045,7 @@ button {
     font-weight: 600;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 768px) and (max-width: 1023px) {
     .form-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
