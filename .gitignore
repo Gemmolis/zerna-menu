@@ -1,0 +1,15 @@
+vk_secrets.env
+.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Локальный журнал заказов (персональные данные)
+data/orders_log.jsonl
+venv/
+__pycache__/
+.env
+vk_secrets.env
+*.log
+orders_log.jsonl

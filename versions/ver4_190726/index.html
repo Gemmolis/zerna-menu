@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Разные Зёрна — меню</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <div class="brand-block">
+          <p class="eyebrow">Кафе</p>
+          <h1>Разные Зёрна</h1>
+          <p class="subtitle">Меню кафе и удобное оформление заказа</p>
+        </div>
+
+        <button class="cart-toggle" id="cartToggle" type="button">
+          Корзина <span id="cartCount">0</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="page">
+      <div class="container layout">
+        <section class="content">
+          <section class="hero-card">
+            <h2>Выберите блюда из меню</h2>
+            <p>
+              Соберите заказ, проверьте корзину и отправьте заявку удобным
+              способом.
+            </p>
+          </section>
+
+          <section class="categories-section">
+            <h2>Категории</h2>
+            <div class="categories-list" id="categoriesList">
+              <!-- категории подставляются из app.js -->
+            </div>
+          </section>
+
+          <section class="menu-section">
+            <div class="section-head">
+              <h2>Меню</h2>
+              <p>Карточки адаптируются под ширину экрана</p>
+            </div>
+
+            <div class="menu-grid" id="menuGrid">
+              <!-- карточки меню подставляются из app.js -->
+            </div>
+          </section>
+        </section>
+
+        <aside class="cart-panel" id="cartPanel">
+          <button
+            class="cart-panel__close"
+            id="closeCartBtn"
+            type="button"
+            aria-label="Закрыть корзину"
+          >
+            ✕
+          </button>
+          <div class="cart-panel__header">
+            <h2>Корзина</h2>
+            <button class="text-btn" id="clearCartBtn" type="button">
+              Очистить
+            </button>
+          </div>
+
+          <div class="cart-items" id="cartItems">
+            <div class="cart-empty">
+              <p>Пока пусто. Добавьте блюда из меню.</p>
+            </div>
+          </div>
+
+          <div class="cart-summary">
+            <p><span>Позиций</span><strong id="cartTotalCount">0</strong></p>
+            <p><span>Итого</span><strong id="cartTotalPrice">0 ₽</strong></p>
+          </div>
+
+          <form class="checkout-form" id="checkoutForm">
+            <div class="checkout-form__head">
+              <h3>Оформление заказа</h3>
+              <p>
+                Заполните контакты, и мы подтвердим заказ через VK или по
+                телефону.
+              </p>
+            </div>
+
+            <div class="form-grid">
+              <label class="form-field">
+                <span>Имя *</span>
+                <input
+                  type="text"
+                  name="name"
+                  id="orderName"
+                  placeholder="Как к вам обращаться"
+                  required
+                />
+              </label>
+
+              <label class="form-field">
+                <span>Телефон *</span>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  class="form-input"
+                  placeholder="+7 (___) ___-__-__"
+                  required
+                />
+              </label>
+
+              <label class="form-field">
+                <span>VK ссылка или id</span>
+                <input
+                  type="text"
+                  name="vk"
+                  id="orderVk"
+                  placeholder="Например: vk.com/cafe_zerna_support или id123456"
+                />
+              </label>
+
+              <label class="form-field">
+                <span>Способ получения *</span>
+                <select name="pickupType" id="pickupType" required>
+                  <option value="">Выберите вариант</option>
+                  <option value="in_cafe">В кафе</option>
+                  <option value="takeaway">С собой</option>
+                  <option value="preorder">Предзаказ ко времени</option>
+                </select>
+              </label>
+
+              <label class="form-field form-field--full">
+                <span>Комментарий к заказу</span>
+                <textarea
+                  name="comment"
+                  id="orderComment"
+                  rows="4"
+                  placeholder="Например: без лука, упаковать отдельно, связаться в VK"
+                ></textarea>
+              </label>
+            </div>
+
+            <div class="checkout-form__meta">
+              <label class="checkbox-field">
+                <input type="checkbox" id="orderPolicy" required />
+                <span
+                  >Согласна/согласен на обработку заявки и обратную связь по
+                  заказу *</span
+                >
+              </label>
+
+              <label class="checkbox-field">
+                <input type="checkbox" id="orderVkNotify" />
+                <span>Хочу получать уведомления от сообщества ВКонтакте</span>
+              </label>
+            </div>
+
+            <div class="checkout-form__actions">
+              <button
+                type="submit"
+                class="primary-btn"
+                id="orderSubmitBtn"
+              >
+                Отправить заказ
+              </button>
+            </div>
+
+            <p class="checkout-form__note">
+              После отправки покажем подтверждение на странице, а затем можно
+              подключить отправку в VK-бота.
+            </p>
+          </form>
+
+          <div class="order-success" id="orderSuccess" hidden>
+            <div class="order-success__inner">
+              <p class="order-success__eyebrow">Готово</p>
+              <h3 class="order-success__title">Заказ принят</h3>
+              <p class="order-success__id">
+                Номер заявки: <strong id="successOrderId">—</strong>
+              </p>
+              <p class="order-success__text" id="orderSuccessText"></p>
+              <button type="button" class="primary-btn" id="newOrderBtn">
+                Оформить ещё один заказ
+              </button>
+            </div>
+          </div>
+
+          <!-- <button
+            class="primary-btn checkout-btn"
+            id="checkoutBtn"
+            type="button"
+          >
+            Оформить заказ
+          </button> -->
+        </aside>
+      </div>
+    </main>
+    <div class="cart-overlay" id="cartOverlay" hidden></div>
+
+    <div class="mobile-cart-bar">
+      <button
+        class="primary-btn mobile-cart-btn"
+        id="mobileCartBtn"
+        type="button"
+      >
+        Корзина · 0 ₽
+      </button>
+    </div>
+
+    <dialog class="product-modal" id="productModal">
+      <div class="product-modal__dialog">
+        <button
+          class="product-modal__close"
+          id="closeProductModal"
+          type="button"
+          aria-label="Закрыть окно"
+        >
+          ✕
+        </button>
+
+        <div class="product-modal__image" id="modalImage">Фото</div>
+
+        <div class="product-modal__content">
+          <p class="product-modal__category" id="modalCategory"></p>
+          <h2 class="product-modal__title" id="modalTitle"></h2>
+          <p class="product-modal__price" id="modalPrice"></p>
+          <p class="product-modal__description" id="modalDescription"></p>
+
+          <div class="product-modal__section">
+            <h3>Состав</h3>
+            <ul class="product-list" id="modalComposition"></ul>
+          </div>
+
+          <div class="product-modal__section">
+            <h3>КБЖУ</h3>
+            <div class="nutrition-grid" id="modalNutrition"></div>
+          </div>
+
+          <div class="product-modal__section">
+            <h3>Аллергены</h3>
+            <div class="allergens-row" id="modalAllergens"></div>
+          </div>
+
+          <div class="product-modal__section" id="modalNoteWrap">
+            <h3>Примечание</h3>
+            <p class="product-modal__note" id="modalNote"></p>
+          </div>
+
+          <button class="primary-btn" id="modalAddToCart" type="button">
+            Добавить в корзину
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <div
+      id="toast"
+      class="toast"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <div class="toast__inner">
+        <div class="toast__mark" aria-hidden="true">✓</div>
+        <div class="toast__copy">
+          <p class="toast__title" id="toastMessage"></p>
+          <p class="toast__subtitle" id="toastSubtitle" hidden></p>
+        </div>
+      </div>
+    </div>
+    <script src="./app.js"></script>
+  </body>
+</html>

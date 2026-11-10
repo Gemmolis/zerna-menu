@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Разные Зёрна — меню</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <!-- ... ваш хедер и меню ... -->
+
+    <aside id="cartPanel" class="cart">
+      <!-- ... список позиций ... -->
+
+      <form id="checkoutForm" class="cart__checkout">
+        <h3 class="cart__title">Оформление заказа</h3>
+
+        <div class="form-group">
+          <label class="form-label" for="name">Имя</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            class="form-input"
+            placeholder="Как к вам обращаться"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="phone">Телефон</label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            class="form-input"
+            placeholder="+7 (___) ___-__-__"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Как получить заказ</label>
+          <div class="form-radio-group">
+            <label class="form-radio">
+              <input type="radio" name="pickupType" value="in_cafe" checked />
+              <span>В кафе</span>
+            </label>
+            <label class="form-radio">
+              <input type="radio" name="pickupType" value="takeaway" />
+              <span>С собой</span>
+            </label>
+            <label class="form-radio">
+              <input type="radio" name="pickupType" value="preorder" />
+              <span>Предзаказ ко времени</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="comment">Комментарий</label>
+          <textarea
+            id="comment"
+            name="comment"
+            class="form-textarea"
+            rows="3"
+            placeholder="Например, время подачи, пожелания по сервировке"
+          ></textarea>
+        </div>
+
+        <div class="form-consent">
+          <label class="form-checkbox">
+            <input type="checkbox" name="policyAccepted" value="1" required />
+            <span>Я соглашаюсь с обработкой персональных данных</span>
+          </label>
+          <label class="form-checkbox">
+            <input type="checkbox" name="vkNotify" value="1" />
+            <span>Получать уведомления во VK</span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full" id="checkoutBtn">
+          Оформить заказ
+        </button>
+      </form>
+    </aside>
+
+    <!-- Toast -->
+    <div id="toast" class="toast" aria-live="polite" aria-atomic="true">
+      <div class="toast__body" id="toastMessage">
+        Заказ принят, мы свяжемся с Вами в ближайшее время
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

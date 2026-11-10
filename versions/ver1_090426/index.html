@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Разные Зёрна — меню</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <div class="brand-block">
+          <p class="eyebrow">Кафе</p>
+          <h1>Разные Зёрна</h1>
+          <p class="subtitle">Меню кафе и удобное оформление заказа</p>
+        </div>
+
+        <button class="cart-toggle" type="button">
+          Корзина <span id="cartCount">0</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="page">
+      <div class="container layout">
+        <section class="content">
+          <section class="hero-card">
+            <h2>Выберите блюда из меню</h2>
+            <p>
+              Соберите заказ, проверьте корзину и отправьте заявку удобным
+              способом.
+            </p>
+          </section>
+
+          <section class="categories-section">
+            <h2>Категории</h2>
+            <div class="categories-list" id="categoriesList">
+              <button class="category-chip active" type="button">Все</button>
+              <button class="category-chip" type="button">Завтраки</button>
+              <button class="category-chip" type="button">Салаты</button>
+              <button class="category-chip" type="button">Напитки</button>
+            </div>
+          </section>
+
+          <section class="menu-section">
+            <div class="section-head">
+              <h2>Меню</h2>
+              <p>Карточки адаптируются под ширину экрана</p>
+            </div>
+
+            <div class="menu-grid" id="menuGrid">
+              <article class="menu-card">
+                <div class="menu-card__image">Фото</div>
+                <div class="menu-card__body">
+                  <p class="menu-card__category">Завтраки</p>
+                  <h3>Омлет с салатом, хлебом и начинкой на выбор</h3>
+                  <p class="menu-card__price">520 ₽</p>
+                  <button class="primary-btn" type="button">Добавить</button>
+                </div>
+              </article>
+
+              <article class="menu-card">
+                <div class="menu-card__image">Фото</div>
+                <div class="menu-card__body">
+                  <p class="menu-card__category">Салаты</p>
+                  <h3>Цезарь с курицей</h3>
+                  <p class="menu-card__price">490 ₽</p>
+                  <button class="primary-btn" type="button">Добавить</button>
+                </div>
+              </article>
+
+              <article class="menu-card">
+                <div class="menu-card__image">Фото</div>
+                <div class="menu-card__body">
+                  <p class="menu-card__category">Напитки</p>
+                  <h3>Раф цитрус 350 мл</h3>
+                  <p class="menu-card__price">450 ₽</p>
+                  <button class="primary-btn" type="button">Добавить</button>
+                </div>
+              </article>
+            </div>
+          </section>
+        </section>
+
+        <aside class="cart-panel" id="cartPanel">
+          <div class="cart-panel__header">
+            <h2>Корзина</h2>
+            <button class="text-btn" type="button">Очистить</button>
+          </div>
+
+          <div class="cart-items" id="cartItems">
+            <div class="cart-empty">
+              <p>Пока пусто. Добавьте блюда из меню.</p>
+            </div>
+          </div>
+
+          <div class="cart-summary">
+            <p><span>Позиций</span><strong>0</strong></p>
+            <p><span>Итого</span><strong>0 ₽</strong></p>
+          </div>
+
+          <button class="primary-btn checkout-btn" type="button">
+            Оформить заказ
+          </button>
+        </aside>
+      </div>
+    </main>
+
+    <div class="mobile-cart-bar">
+      <button class="primary-btn mobile-cart-btn" type="button">
+        Корзина · 0 ₽
+      </button>
+    </div>
+    <dialog class="product-modal" id="productModal">
+      <div class="product-modal__dialog">
+        <button
+          class="product-modal__close"
+          id="closeProductModal"
+          type="button"
+          aria-label="Закрыть окно"
+        >
+          ✕
+        </button>
+
+        <div class="product-modal__image" id="modalImage">Фото</div>
+
+        <div class="product-modal__content">
+          <p class="product-modal__category" id="modalCategory"></p>
+          <h2 class="product-modal__title" id="modalTitle"></h2>
+          <p class="product-modal__price" id="modalPrice"></p>
+          <p class="product-modal__description" id="modalDescription"></p>
+
+          <div class="product-modal__section">
+            <h3>Состав</h3>
+            <ul class="product-list" id="modalComposition"></ul>
+          </div>
+
+          <div class="product-modal__section">
+            <h3>КБЖУ</h3>
+            <div class="nutrition-grid" id="modalNutrition"></div>
+          </div>
+
+          <div class="product-modal__section">
+            <h3>Аллергены</h3>
+            <div class="allergens-row" id="modalAllergens"></div>
+          </div>
+
+          <div class="product-modal__section" id="modalNoteWrap">
+            <h3>Примечание</h3>
+            <p class="product-modal__note" id="modalNote"></p>
+          </div>
+
+          <button class="primary-btn" id="modalAddToCart" type="button">
+            Добавить в корзину
+          </button>
+        </div>
+      </div>
+    </dialog>
+    <script src="./app.js"></script>
+  </body>
+</html>
