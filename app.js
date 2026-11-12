@@ -85,14 +85,19 @@ function showToast(message, timeout = 4000, subtitle = null) {
     toastHideTimer = null;
   }, timeout);
 }
-// TODO: заменить на реальный URL бэкенда
-const ORDER_WEBHOOK_URL = "http://localhost:8000/api/orders/from-site";
+
+// TODO: заменить на реальный URL бэкенда (твой ngrok)
+const ORDER_WEBHOOK_URL =
+  "https://rewrite-heritage-void.ngrok-free.dev/api/orders/from-site";
 
 let menuData = [];
 let categoriesData = [];
 let activeCategory = "Все";
 let cart = [];
+let currentModalItem = null;
+let currentSelectedModifiers = [];
 
+// --- Работа с localStorage ---
 function loadCartFromStorage() {
   try {
     const savedCart = localStorage.getItem("zerna_cart");
@@ -112,8 +117,8 @@ function saveCartToStorage() {
     console.error("Ошибка сохранения корзины:", e);
   }
 }
-let currentModalItem = null;
 
+// --- Вспомогательные функции ---
 function formatPrice(value) {
   return `${Number(value || 0)} ₽`;
 }
@@ -150,7 +155,6 @@ function renderMenuSkeleton() {
 function setPhoneMask() {
   if (!phoneInput) return;
 
-  // При фокусе, если пусто — ставим шаблон
   phoneInput.addEventListener("focus", () => {
     if (!phoneInput.value) {
       phoneInput.value = "+7 ";
@@ -159,16 +163,11 @@ function setPhoneMask() {
 
   phoneInput.addEventListener("input", () => {
     let digits = phoneInput.value.replace(/\D/g, "");
-
-    // Обеспечиваем, что начинается с 7
     if (!digits.startsWith("7")) {
       digits = "7" + digits.replace(/^7*/, "");
     }
-
-    // Ограничиваем 11 цифрами
     digits = digits.substring(0, 11);
 
-    // Форматируем: +7 (XXX) XXX-XX-XX
     let formatted = "+7";
     if (digits.length > 1) {
       formatted += " (";
@@ -186,7 +185,6 @@ function setPhoneMask() {
       formatted += "-";
       formatted += digits.substring(9, Math.min(11, digits.length));
     }
-
     phoneInput.value = formatted;
   });
 }
@@ -196,27 +194,16 @@ function isValidPhone(value) {
   return digits.length === 11 && digits.startsWith("7");
 }
 
+// --- Управление корзиной (UI) ---
 function openCart() {
-  if (cartPanel) {
-    cartPanel.classList.add("is-open");
-  }
-
-  if (cartOverlay) {
-    cartOverlay.hidden = false;
-  }
-
+  if (cartPanel) cartPanel.classList.add("is-open");
+  if (cartOverlay) cartOverlay.hidden = false;
   document.body.style.overflow = "hidden";
 }
 
 function closeCart() {
-  if (cartPanel) {
-    cartPanel.classList.remove("is-open");
-  }
-
-  if (cartOverlay) {
-    cartOverlay.hidden = true;
-  }
-
+  if (cartPanel) cartPanel.classList.remove("is-open");
+  if (cartOverlay) cartOverlay.hidden = true;
   document.body.style.overflow = "";
 }
 
@@ -226,7 +213,6 @@ function getTagLabels(tags = []) {
     vegetarian: "Вегетарианское",
     "gluten-free": "Без глютена",
   };
-
   return tags
     .filter((tag) => tag !== "new")
     .map((tag) => `<span class="tag">${escapeHtml(labels[tag] || tag)}</span>`)
@@ -240,34 +226,20 @@ function getVisibleItems() {
 
 function renderCategories() {
   const list = ["Все", ...categoriesData];
-
   if (!categoriesList) return;
 
   categoriesList.innerHTML = list
     .map((category) => {
       const activeClass = category === activeCategory ? "active" : "";
-      return `
-        <button
-          class="category-chip ${activeClass}"
-          type="button"
-          data-category="${category}"
-        >
-          ${category}
-        </button>
-      `;
+      return `<button class="category-chip ${activeClass}" type="button" data-category="${category}">${category}</button>`;
     })
     .join("");
 }
 
 function renderMenu(items) {
   if (!menuGrid) return;
-
   if (!items.length) {
-    menuGrid.innerHTML = `
-      <div class="cart-empty">
-        <p>В этой категории пока нет позиций.</p>
-      </div>
-    `;
+    menuGrid.innerHTML = `<div class="cart-empty"><p>В этой категории пока нет позиций.</p></div>`;
     return;
   }
 
@@ -279,44 +251,18 @@ function renderMenu(items) {
       return `
         <article class="menu-card">
           ${hasBadge ? '<span class="menu-badge">Новинка</span>' : ""}
-
           <div class="menu-card__image">
-            ${
-              item.image
-                ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}">`
-                : `<div class="menu-card__placeholder" role="img" aria-label="Фото появится позже"><span class="menu-card__placeholder-icon" aria-hidden="true"></span><span class="menu-card__placeholder-text">Фото скоро</span></div>`
-            }
+            ${item.image ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}">` : `<div class="menu-card__placeholder" role="img" aria-label="Фото появится позже"><span class="menu-card__placeholder-icon" aria-hidden="true"></span><span class="menu-card__placeholder-text">Фото скоро</span></div>`}
           </div>
-
           <div class="menu-card__body">
             <p class="menu-card__category">${escapeHtml(item.category)}</p>
             <h3>${escapeHtml(item.name)}</h3>
-
-            ${
-              tagsHtml
-                ? `<div class="tags-row">${tagsHtml}</div>`
-                : '<div class="tags-row tags-row--empty"></div>'
-            }
-
+            ${tagsHtml ? `<div class="tags-row">${tagsHtml}</div>` : '<div class="tags-row tags-row--empty"></div>'}
             <div class="menu-card__footer">
               <p class="menu-card__price">${formatPrice(item.price)}</p>
-
               <div class="menu-card__actions">
-                <button
-                  class="secondary-btn details-btn"
-                  type="button"
-                  data-id="${item.id}"
-                >
-                  Подробнее
-                </button>
-
-                <button
-                  class="primary-btn add-btn"
-                  type="button"
-                  data-add-id="${item.id}"
-                >
-                  Добавить
-                </button>
+                <button class="secondary-btn details-btn" type="button" data-id="${item.id}">Подробнее</button>
+                <button class="primary-btn add-btn" type="button" data-add-id="${item.id}">Добавить</button>
               </div>
             </div>
           </div>
@@ -328,103 +274,115 @@ function renderMenu(items) {
 
 function renderNutrition(nutrition = {}) {
   if (!modalNutrition) return;
-
   const values = [
     { label: "Ккал", value: nutrition["ккал"] || "Уточняется" },
     { label: "Белки", value: nutrition["белки"] || "—" },
     { label: "Жиры", value: nutrition["жиры"] || "—" },
     { label: "Углеводы", value: nutrition["углеводы"] || "—" },
   ];
-
   modalNutrition.innerHTML = values
     .map(
-      (item) => `
-        <div class="nutrition-card">
-          <span class="nutrition-card__label">${item.label}</span>
-          <strong class="nutrition-card__value">${item.value}</strong>
-        </div>
-      `,
+      (item) =>
+        `<div class="nutrition-card"><span class="nutrition-card__label">${item.label}</span><strong class="nutrition-card__value">${item.value}</strong></div>`,
     )
     .join("");
 }
 
 function renderAllergens(allergens = []) {
   if (!modalAllergens) return;
-
   if (!allergens.length) {
     modalAllergens.innerHTML =
       '<p class="empty-text">Явные аллергены не указаны.</p>';
     return;
   }
-
   modalAllergens.innerHTML = allergens
     .map((item) => `<span class="allergen-tag">${escapeHtml(item)}</span>`)
     .join("");
 }
 
-// ДОБАВЬ ЭТИ ПЕРЕМЕННЫЕ РЯДОМ С currentModalItem
-let currentSelectedModifiers = [];
-const modalPriceBase = document.getElementById("modalPrice"); // базовый элемент цены в модалке
-
 function openProductModal(item) {
   currentModalItem = item;
-  currentSelectedModifiers = []; // Сбрасываем выбранные допы при открытии
+  currentSelectedModifiers = [];
 
-  // ... (твой код рендера картинки, категории, названия, описания, КБЖУ - ОСТАВЬ БЕЗ ИЗМЕНЕНИЙ) ...
+  if (modalImage) {
+    modalImage.innerHTML = item.image
+      ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}">`
+      : `<div class="product-modal__image-placeholder" role="img" aria-label="Фото появится позже"><span class="menu-card__placeholder-icon" aria-hidden="true"></span><span class="menu-card__placeholder-text">Фото скоро</span></div>`;
+  }
 
   if (modalCategory) modalCategory.textContent = item.category || "";
   if (modalTitle) modalTitle.textContent = item.name || "";
-  if (modalDescription) modalDescription.textContent = item.description || "Описание уточняется.";
-  
-  // Рендерим базовую цену
+  if (modalDescription)
+    modalDescription.textContent = item.description || "Описание уточняется.";
   if (modalPrice) modalPrice.textContent = formatPrice(item.price || 0);
 
-  // --- НОВЫЙ КОД ДЛЯ МОДИФИКАТОРОВ ---
+  if (modalComposition) {
+    modalComposition.innerHTML = (item.composition || [])
+      .map((point) => `<li>${escapeHtml(point)}</li>`)
+      .join("");
+  }
+
+  renderNutrition(item.nutrition || {});
+  renderAllergens(item.allergens || []);
+
+  if (modalNoteWrap && modalNote) {
+    if (item.note) {
+      modalNote.textContent = item.note;
+      modalNoteWrap.style.display = "block";
+    } else {
+      modalNote.textContent = "";
+      modalNoteWrap.style.display = "none";
+    }
+  }
+
+  // Рендер модификаторов (добавок)
   const modWrap = document.getElementById("modalModifiersWrap");
   const modContainer = document.getElementById("modalModifiers");
 
   if (item.modifiers && item.modifiers.length > 0) {
     modWrap.style.display = "block";
-    modContainer.innerHTML = item.modifiers.map(mod => `
+    modContainer.innerHTML = item.modifiers
+      .map(
+        (mod) => `
       <label class="modifier-item">
         <input type="checkbox" value="${mod.id}" data-price="${mod.price}" data-name="${escapeHtml(mod.name)}">
         <span class="modifier-name">${escapeHtml(mod.name)}</span>
         <span class="modifier-price">+${formatPrice(mod.price)}</span>
       </label>
-    `).join("");
+    `,
+      )
+      .join("");
 
-    // Вешаем обработчики на чекбоксы, чтобы цена менялась на лету
     const checkboxes = modContainer.querySelectorAll('input[type="checkbox"]');
-    checkboxes.forEach(cb => {
-      cb.addEventListener('change', updateModalPrice);
+    checkboxes.forEach((cb) => {
+      cb.addEventListener("change", updateModalPrice);
     });
   } else {
     modWrap.style.display = "none";
     modContainer.innerHTML = "";
   }
-  // -----------------------------------
 
   if (productModal && typeof productModal.showModal === "function") {
     productModal.showModal();
   }
 }
 
-// Вспомогательная функция пересчета цены в модалке
 function updateModalPrice() {
   if (!currentModalItem) return;
-  
   const modContainer = document.getElementById("modalModifiers");
-  const checkboxes = modContainer.querySelectorAll('input[type="checkbox"]:checked');
-  
-  let extraPrice = 0;
-  currentSelectedModifiers = []; // Очищаем перед сбором
+  const checkboxes = modContainer.querySelectorAll(
+    'input[type="checkbox"]:checked',
+  );
 
-  checkboxes.forEach(cb => {
+  let extraPrice = 0;
+  currentSelectedModifiers = [];
+
+  checkboxes.forEach((cb) => {
     extraPrice += Number(cb.dataset.price);
     currentSelectedModifiers.push({
       id: cb.value,
       name: cb.dataset.name,
-      price: Number(cb.dataset.price)
+      price: Number(cb.dataset.price),
     });
   });
 
@@ -443,16 +401,14 @@ function addToCart(itemId, modifiers = []) {
   const product = menuData.find((item) => item.id === itemId);
   if (!product) return;
 
-  // Формируем уникальный ID для позиции с учетом добавок
-  const modIds = modifiers.map(m => m.id).sort().join('-');
+  const modIds = modifiers
+    .map((m) => m.id)
+    .sort()
+    .join("-");
   const cartItemId = modIds ? `${itemId}_${modIds}` : `${itemId}`;
-
-  // Считаем итоговую цену
   const modsPrice = modifiers.reduce((sum, m) => sum + m.price, 0);
   const finalPrice = product.price + modsPrice;
-
-  // Формируем название с добавками (чтобы повар видел)
-  const modsNames = modifiers.map(m => m.name).join(', ');
+  const modsNames = modifiers.map((m) => m.name).join(", ");
   const finalName = modsNames ? `${product.name} (${modsNames})` : product.name;
 
   const existing = cart.find((item) => item.id === cartItemId);
@@ -461,11 +417,11 @@ function addToCart(itemId, modifiers = []) {
     existing.quantity += 1;
   } else {
     cart.push({
-      id: cartItemId, // Уникальный ID для корзины
+      id: cartItemId,
       originalId: product.id,
       name: finalName,
       category: product.category,
-      price: finalPrice, // Цена с учетом добавок
+      price: finalPrice,
       quantity: 1,
     });
   }
@@ -477,7 +433,6 @@ function addToCart(itemId, modifiers = []) {
 function increaseCartItem(itemId) {
   const item = cart.find((product) => product.id === itemId);
   if (!item) return;
-
   item.quantity += 1;
   renderCart();
 }
@@ -485,13 +440,10 @@ function increaseCartItem(itemId) {
 function decreaseCartItem(itemId) {
   const item = cart.find((product) => product.id === itemId);
   if (!item) return;
-
   item.quantity -= 1;
-
   if (item.quantity <= 0) {
     cart = cart.filter((product) => product.id !== itemId);
   }
-
   renderCart();
 }
 
@@ -506,71 +458,38 @@ function getCartTotals() {
     (sum, item) => sum + item.quantity * item.price,
     0,
   );
-
   return { totalCount, totalPrice };
 }
 
 function renderCart() {
   const { totalCount, totalPrice } = getCartTotals();
-
   if (!cartItems) return;
 
   if (!cart.length) {
-    cartItems.innerHTML = `
-      <div class="cart-empty">
-        <p>Пока пусто. Добавьте блюда из меню.</p>
-      </div>
-    `;
+    cartItems.innerHTML = `<div class="cart-empty"><p>Пока пусто. Добавьте блюда из меню.</p></div>`;
   } else {
     cartItems.innerHTML = cart
       .map((item) => {
         const itemSum = item.price * item.quantity;
-
         return `
-          <article class="cart-item">
-            <div class="cart-item__top">
-              <div>
-                <p class="cart-item__category">${item.category}</p>
-                <h3 class="cart-item__title">${item.name}</h3>
-              </div>
-
-              <button
-                class="cart-item__remove"
-                type="button"
-                data-remove-id="${item.id}"
-                aria-label="Удалить позицию"
-              >
-                ✕
-              </button>
+        <article class="cart-item">
+          <div class="cart-item__top">
+            <div>
+              <p class="cart-item__category">${item.category}</p>
+              <h3 class="cart-item__title">${item.name}</h3>
             </div>
-
-            <div class="cart-item__bottom">
-              <div class="cart-stepper">
-                <button
-                  class="cart-stepper__btn"
-                  type="button"
-                  data-decrease-id="${item.id}"
-                  aria-label="Уменьшить количество"
-                >
-                  −
-                </button>
-
-                <span class="cart-stepper__value">${item.quantity}</span>
-
-                <button
-                  class="cart-stepper__btn"
-                  type="button"
-                  data-increase-id="${item.id}"
-                  aria-label="Увеличить количество"
-                >
-                  +
-                </button>
-              </div>
-
-              <strong class="cart-item__sum">${formatPrice(itemSum)}</strong>
+            <button class="cart-item__remove" type="button" data-remove-id="${item.id}" aria-label="Удалить позицию">✕</button>
+          </div>
+          <div class="cart-item__bottom">
+            <div class="cart-stepper">
+              <button class="cart-stepper__btn" type="button" data-decrease-id="${item.id}" aria-label="Уменьшить количество">−</button>
+              <span class="cart-stepper__value">${item.quantity}</span>
+              <button class="cart-stepper__btn" type="button" data-increase-id="${item.id}" aria-label="Увеличить количество">+</button>
             </div>
-          </article>
-        `;
+            <strong class="cart-item__sum">${formatPrice(itemSum)}</strong>
+          </div>
+        </article>
+      `;
       })
       .join("");
   }
@@ -583,13 +502,13 @@ function renderCart() {
       ? `Корзина · ${formatPrice(totalPrice)}`
       : "Корзина · 0 ₽";
   }
+
   saveCartToStorage();
   bindCartItemActions();
 }
 
 function bindCategoryActions() {
   const categoryButtons = document.querySelectorAll("[data-category]");
-
   categoryButtons.forEach((button) => {
     button.addEventListener("click", () => {
       activeCategory = button.dataset.category;
@@ -615,7 +534,6 @@ function bindMenuActions() {
     button.addEventListener("click", () => {
       const itemId = Number(button.dataset.id);
       const item = menuData.find((product) => product.id === itemId);
-
       if (item) {
         openProductModal(item);
       }
@@ -629,38 +547,32 @@ function bindCartItemActions() {
   const removeButtons = document.querySelectorAll("[data-remove-id]");
 
   increaseButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      increaseCartItem(Number(button.dataset.increaseId));
-    });
+    button.addEventListener("click", () =>
+      increaseCartItem(button.dataset.increaseId),
+    );
   });
-
   decreaseButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      decreaseCartItem(Number(button.dataset.decreaseId));
-    });
+    button.addEventListener("click", () =>
+      decreaseCartItem(button.dataset.decreaseId),
+    );
   });
-
   removeButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      removeCartItem(Number(button.dataset.removeId));
-    });
+    button.addEventListener("click", () =>
+      removeCartItem(button.dataset.removeId),
+    );
   });
 }
 
 function setFormStatus(message = "", type = "") {
   if (!checkoutForm) return;
-
   let statusEl = checkoutForm.querySelector(".form-status");
-
   if (!statusEl) {
     statusEl = document.createElement("p");
     statusEl.className = "form-status";
     checkoutForm.appendChild(statusEl);
   }
-
   statusEl.textContent = message;
   statusEl.className = "form-status";
-
   if (type) {
     statusEl.classList.add(`is-${type}`);
   }
@@ -675,20 +587,15 @@ function getOrderFormData() {
   const policyAccepted =
     document.getElementById("orderPolicy")?.checked || false;
   const vkNotify = document.getElementById("orderVkNotify")?.checked || false;
-
   const totals = getCartTotals();
 
   return {
-    customer: {
-      name,
-      phone,
-      vk,
-    },
+    customer: { name, phone, vk },
     order: {
       pickupType,
       comment,
       items: cart.map((item) => ({
-        id: item.id,
+        id: item.originalId || item.id, // Отправляем числовой ID бэкенду
         name: item.name,
         category: item.category,
         price: item.price,
@@ -698,30 +605,17 @@ function getOrderFormData() {
       totalCount: totals.totalCount,
       totalPrice: totals.totalPrice,
     },
-    consents: {
-      policyAccepted,
-      vkNotify,
-    },
-    meta: {
-      source: "website",
-    },
+    consents: { policyAccepted, vkNotify },
+    meta: { source: "website" },
   };
 }
 
 function showOrderSuccess(responseData = {}) {
-  if (checkoutForm) {
-    checkoutForm.hidden = true;
-  }
-
-  if (orderSuccess) {
-    orderSuccess.hidden = false;
-  }
-
-  if (successOrderId) {
+  if (checkoutForm) checkoutForm.hidden = true;
+  if (orderSuccess) orderSuccess.hidden = false;
+  if (successOrderId)
     successOrderId.textContent =
       responseData.orderId || "Будет присвоен оператором";
-  }
-
   if (orderSuccessText) {
     orderSuccessText.textContent =
       responseData.message ||
@@ -734,16 +628,10 @@ function resetOrderFlow() {
     checkoutForm.reset();
     checkoutForm.hidden = false;
   }
-
-  if (orderSuccess) {
-    orderSuccess.hidden = true;
-  }
-
+  if (orderSuccess) orderSuccess.hidden = true;
   setSubmitOrderLoading(false);
   orderSubmitInFlight = false;
-
   setFormStatus("", "");
-
   cart = [];
   renderCart();
   closeCart();
@@ -751,37 +639,28 @@ function resetOrderFlow() {
 
 function getApiErrorMessage(result, status) {
   const detail = result?.detail;
-  if (typeof detail === "string") {
-    return detail;
-  }
+  if (typeof detail === "string") return detail;
   if (Array.isArray(detail)) {
     const parts = detail
       .map((entry) =>
         typeof entry?.msg === "string" ? entry.msg : String(entry?.msg ?? ""),
       )
       .filter(Boolean);
-    if (parts.length) {
-      return parts.join(" ");
-    }
+    if (parts.length) return parts.join(" ");
   }
-  if (typeof result?.message === "string" && result.message) {
+  if (typeof result?.message === "string" && result.message)
     return result.message;
-  }
   return `Ошибка отправки: ${status}`;
 }
 
 async function submitOrder(orderData) {
   const response = await fetch(ORDER_WEBHOOK_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify(orderData),
   });
 
   let result = {};
-
   try {
     result = await response.json();
   } catch (error) {
@@ -791,26 +670,14 @@ async function submitOrder(orderData) {
   if (!response.ok) {
     throw new Error(getApiErrorMessage(result, response.status));
   }
-
   return result;
 }
 
 function bindStaticActions() {
-  if (cartToggle) {
-    cartToggle.addEventListener("click", openCart);
-  }
-
-  if (mobileCartBtn) {
-    mobileCartBtn.addEventListener("click", openCart);
-  }
-
-  if (closeCartBtn) {
-    closeCartBtn.addEventListener("click", closeCart);
-  }
-
-  if (cartOverlay) {
-    cartOverlay.addEventListener("click", closeCart);
-  }
+  if (cartToggle) cartToggle.addEventListener("click", openCart);
+  if (mobileCartBtn) mobileCartBtn.addEventListener("click", openCart);
+  if (closeCartBtn) closeCartBtn.addEventListener("click", closeCart);
+  if (cartOverlay) cartOverlay.addEventListener("click", closeCart);
 
   if (clearCartBtn) {
     clearCartBtn.addEventListener("click", () => {
@@ -819,43 +686,32 @@ function bindStaticActions() {
     });
   }
 
-  if (checkoutBtn) {
-    checkoutBtn.addEventListener("click", () => {
-      openCart();
-    });
-  }
+  if (checkoutBtn) checkoutBtn.addEventListener("click", openCart);
 
-  if (closeProductModal) {
+  if (closeProductModal)
     closeProductModal.addEventListener("click", closeModal);
-  }
 
   if (productModal) {
     productModal.addEventListener("click", (event) => {
       const dialog = productModal.querySelector(".product-modal__dialog");
       if (!dialog) return;
-
       const rect = dialog.getBoundingClientRect();
       const clickedInside =
         event.clientX >= rect.left &&
         event.clientX <= rect.right &&
         event.clientY >= rect.top &&
         event.clientY <= rect.bottom;
-
-      if (!clickedInside) {
-        closeModal();
-      }
+      if (!clickedInside) closeModal();
     });
-
     productModal.addEventListener("cancel", (event) => {
       event.preventDefault();
       closeModal();
     });
   }
 
-   if (modalAddToCart) {
+  if (modalAddToCart) {
     modalAddToCart.addEventListener("click", () => {
       if (!currentModalItem) return;
-      // Передаем базовый ID и массив выбранных допов
       addToCart(currentModalItem.id, currentSelectedModifiers);
       closeModal();
     });
@@ -882,10 +738,7 @@ function bindStaticActions() {
       }
 
       if (!isValidPhone(orderData.customer.phone)) {
-        setFormStatus(
-          "Введите полный номер телефона: +7 и 10 цифр после кода страны.",
-          "error",
-        );
+        setFormStatus("Введите полный номер телефона: +7 и 10 цифр.", "error");
         return;
       }
 
@@ -894,17 +747,13 @@ function bindStaticActions() {
         return;
       }
 
-      if (orderSubmitInFlight) {
-        return;
-      }
+      if (orderSubmitInFlight) return;
       orderSubmitInFlight = true;
       setSubmitOrderLoading(true);
 
       try {
         setFormStatus("Отправляем заказ...", "");
-
         const result = await submitOrder(orderData);
-
         setFormStatus("", "");
         showOrderSuccess(result);
         showToast(
@@ -920,58 +769,74 @@ function bindStaticActions() {
         );
       } finally {
         orderSubmitInFlight = false;
-        if (checkoutForm && !checkoutForm.hidden) {
-          setSubmitOrderLoading(false);
-        }
+        if (checkoutForm && !checkoutForm.hidden) setSubmitOrderLoading(false);
       }
     });
   }
 
-  if (newOrderBtn) {
-    newOrderBtn.addEventListener("click", resetOrderFlow);
-  }
+  if (newOrderBtn) newOrderBtn.addEventListener("click", resetOrderFlow);
 }
 
 async function loadMenu() {
   renderMenuSkeleton();
-  if (categoriesList) {
+  if (categoriesList)
     categoriesList.innerHTML = `<p class="categories-loading">Загрузка меню…</p>`;
-  }
 
   try {
     const response = await fetch("./data/menu.json");
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const data = await response.json();
-
     categoriesData = data.categories || [];
     menuData = data.items || [];
 
     renderCategories();
     renderMenu(getVisibleItems());
     renderCart();
-
     bindCategoryActions();
     bindMenuActions();
   } catch (error) {
     console.error("Ошибка загрузки меню:", error);
-
-    if (categoriesList) {
-      categoriesList.innerHTML = "";
-    }
-
-    if (menuGrid) {
-      menuGrid.innerHTML = `
-        <div class="cart-empty">
-          <p>Не удалось загрузить меню. Проверьте файл data/menu.json.</p>
-        </div>
-      `;
-    }
+    if (categoriesList) categoriesList.innerHTML = "";
+    if (menuGrid)
+      menuGrid.innerHTML = `<div class="cart-empty"><p>Не удалось загрузить меню. Проверьте файл data/menu.json.</p></div>`;
   }
 }
+
+// --- ИНТЕГРАЦИЯ С TELEGRAM ---
+function initTelegramWebApp() {
+  // Проверяем, есть ли объект Telegram
+  if (window.Telegram && window.Telegram.WebApp) {
+    const tg = window.Telegram.WebApp;
+    tg.expand(); // Разворачиваем на весь экран
+
+    // Даем странице полсекунды на загрузку DOM
+    setTimeout(() => {
+      if (tg.initDataUnsafe) {
+        // Показываем отладочное окно, чтобы понять, приходят ли данные на телефоне
+        tg.showAlert("Данные от TG: " + JSON.stringify(tg.initDataUnsafe));
+
+        if (tg.initDataUnsafe.user) {
+          const user = tg.initDataUnsafe.user;
+          const nameInput = document.getElementById("orderName");
+
+          // Подставляем имя, если поле пустое
+          if (nameInput && !nameInput.value) {
+            nameInput.value = user.first_name || "";
+          }
+        }
+      } else {
+        tg.showAlert("Telegram не передал данные (initDataUnsafe пуст)");
+      }
+    }, 500);
+  } else {
+    console.log("Открыто не в Telegram");
+  }
+}
+
+// --- Инициализация при запуске ---
 loadCartFromStorage();
 bindStaticActions();
 loadMenu();
 setPhoneMask();
+initTelegramWebApp();
