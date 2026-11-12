@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 app = FastAPI(title="Cafe Orders API")
 
 
-def load_vk_secrets_from_file(filename: str = "vk_secrets.env") -> None:
+def load_secrets_from_file(filename: str = "vk_secrets.env") -> None:
     """
     Читает KEY=VALUE из файла рядом с main.py и подставляет в os.environ.
     Уже заданные переменные окружения не перезаписываются.
@@ -39,21 +39,19 @@ def load_vk_secrets_from_file(filename: str = "vk_secrets.env") -> None:
             os.environ[key] = value
 
 
-load_vk_secrets_from_file()
+load_secrets_from_file()
 
-# ===== CORS (чтобы ваш фронт мог дергать API локально) =====
+# ===== CORS =====
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # на проде заменить на конкретные домены
-    allow_credentials=False,  # иначе с allow_origins=["*"] браузер ведёт себя некорректно
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-# ===== Pydantic-схемы — структура заказа =====
-
-
+# ===== Pydantic-схемы =====
 class OrderItem(BaseModel):
     id: str
     name: str
@@ -99,7 +97,7 @@ class OutgoingResponse(BaseModel):
     message: str
 
 
-# ===== VK: токен и peer_id — из окружения или из файла vk_secrets.env =====
+# ===== VK =====
 VK_GROUP_TOKEN = os.getenv("VK_GROUP_TOKEN", "").strip()
 VK_API_URL = "https://api.vk.com/method"
 VK_API_VERSION = "5.199"
@@ -109,18 +107,20 @@ try:
 except ValueError:
     ADMIN_VK_PEER_ID = 0
 
-# ===== Яндекс.Диск: копия каждого заказа (опционально) =====
+# ===== Telegram =====
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+ADMIN_TELEGRAM_ID = os.getenv("ADMIN_TELEGRAM_ID", "").strip()
+
+# ===== Яндекс.Диск =====
 YANDEX_DISK_TOKEN = os.getenv("YANDEX_DISK_TOKEN", "").strip()
-YANDEX_DISK_FOLDER = os.getenv(
-    "YANDEX_DISK_FOLDER", "zerna-cafe-orders"
-).strip().strip("/")
+YANDEX_DISK_FOLDER = os.getenv("YANDEX_DISK_FOLDER", "zerna-cafe-orders").strip().strip("/")
 
 # ===== Запись заказов на диск =====
 DATA_DIR = Path(__file__).resolve().parent / "data"
 ORDERS_LOG_PATH = DATA_DIR / "orders_log.jsonl"
 _orders_write_lock = asyncio.Lock()
 
-# ===== Лимит POST /api/orders по IP (простая защита от спама) =====
+# ===== Лимит POST /api/orders по IP =====
 _rate_lock = asyncio.Lock()
 _rate_by_ip: dict[str, deque[float]] = defaultdict(lambda: deque(maxlen=48))
 ORDER_RATE_WINDOW_SEC = 60.0
@@ -174,9 +174,6 @@ async def persist_order_to_file(order_id: str, order: IncomingOrder) -> None:
         ) from exc
 
 
-# ===== Вспомогательные функции =====
-
-
 def generate_order_id() -> str:
     """Генерируем ID заказа вида RZ-YYYYMMDD-HHMMSS."""
     now = datetime.now()
@@ -186,14 +183,14 @@ def generate_order_id() -> str:
 def build_admin_message(order_id: str, data: IncomingOrder) -> str:
     """Формируем текст сообщения админу."""
     lines = [
-        f"Новый заказ {order_id}",
+        f"<b>Новый заказ {order_id}</b>",
         "",
-        f"Имя: {data.customer.name}",
-        f"Телефон: {data.customer.phone}",
+        f"<b>Имя:</b> {data.customer.name}",
+        f"<b>Телефон:</b> {data.customer.phone}",
     ]
 
     if data.customer.vk:
-        lines.append(f"VK: {data.customer.vk}")
+        lines.append(f"<b>VK:</b> {data.customer.vk}")
 
     pickup_map = {
         "in_cafe": "В кафе",
@@ -201,115 +198,90 @@ def build_admin_message(order_id: str, data: IncomingOrder) -> str:
         "preorder": "Предзаказ ко времени",
     }
     pickup_label = pickup_map.get(data.order.pickupType, data.order.pickupType)
-    lines.append(f"Способ получения: {pickup_label}")
+    lines.append(f"<b>Способ получения:</b> {pickup_label}")
     lines.append("")
 
-    lines.append("Состав заказа:")
+    lines.append("<b>Состав заказа:</b>")
     for idx, item in enumerate(data.order.items, start=1):
-        line = (
-            f"{idx}. {item.name} × {item.quantity} "
-            f"= {int(item.total)} ₽"
-        )
+        line = f"{idx}. {item.name} × {item.quantity} = {int(item.total)} ₽"
         if item.category:
             line += f" ({item.category})"
         lines.append(line)
 
     lines.append("")
     if data.order.comment:
-        lines.append("Комментарий:")
+        lines.append("<b>Комментарий:</b>")
         lines.append(data.order.comment)
         lines.append("")
 
-    lines.append("Итого:")
-    lines.append(
-        f"{data.order.totalCount} позиций / {int(data.order.totalPrice)} ₽"
-    )
+    lines.append("<b>Итого:</b>")
+    lines.append(f"{data.order.totalCount} позиций / {int(data.order.totalPrice)} ₽")
 
     return "\n".join(lines)
 
 
-async def send_vk_message(peer_id: int, text: str) -> None:
-    """
-    Заглушка отправки сообщения в VK.
-    Реальный вызов messages.send можно раскомментировать, когда будет токен.
-    """
-    if not VK_GROUP_TOKEN or peer_id <= 0:
-        # Пока просто логируем
-        print("\n[VK MOCK SEND]")
-        print(f"peer_id: {peer_id}")
-        print(text)
-        print("[/VK MOCK SEND]\n")
+async def send_telegram_message(chat_id: str, text: str) -> None:
+    """Отправляет сообщение в Telegram через Bot API."""
+    if not TELEGRAM_BOT_TOKEN or not chat_id:
+        print("[INFO] Telegram токен или ID админа не заданы, уведомление не отправлено.")
         return
 
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": chat_id,
+        "text": text,
+        "parse_mode": "HTML"  # Разрешает использовать жирный шрифт
+    }
+    
     async with httpx.AsyncClient(timeout=10) as client:
-        payload = {
-            "access_token": VK_GROUP_TOKEN,
-            "v": VK_API_VERSION,
-            "peer_id": peer_id,
-            "random_id": secrets.randbelow(2**31),
-            "message": text,
-        }
-        resp = await client.post(f"{VK_API_URL}/messages.send", data=payload)
-        data = resp.json()
-        print("[VK RAW RESPONSE]", data)  # добавили явный лог
-
-        if "error" in data:
-            print("[VK ERROR]", data["error"])
+        try:
+            resp = await client.post(url, json=payload)
+            data = resp.json()
+            if not data.get("ok"):
+                print("[TELEGRAM ERROR]", data)
+            else:
+                print("[TELEGRAM] Уведомление успешно отправлено админу.")
+        except Exception as exc:
+            print("[TELEGRAM SEND ERROR]", exc)
 
 
 def validate_order_totals(order: IncomingOrder) -> None:
-    """Сверка суммы и количества с позициями (защита от подмены в JSON)."""
+    """Сверка суммы и количества с позициями."""
     items = order.order.items
     computed_count = sum(i.quantity for i in items)
     computed_price = sum(float(i.price) * int(i.quantity) for i in items)
     if computed_count != order.order.totalCount:
-        raise HTTPException(
-            status_code=400,
-            detail="Неверное количество позиций в заказе",
-        )
+        raise HTTPException(status_code=400, detail="Неверное количество позиций в заказе")
     if abs(computed_price - float(order.order.totalPrice)) > 0.02:
-        raise HTTPException(
-            status_code=400,
-            detail="Неверная сумма заказа",
-        )
+        raise HTTPException(status_code=400, detail="Неверная сумма заказа")
     for i in items:
         expected = float(i.price) * int(i.quantity)
         if abs(expected - float(i.total)) > 0.02:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Неверная сумма по позиции: {i.name}",
-            )
+            raise HTTPException(status_code=400, detail=f"Неверная сумма по позиции: {i.name}")
 
 
 # ===== Основной endpoint для сайта =====
-
-
 @app.post("/api/orders/from-site", response_model=OutgoingResponse)
 async def create_order(order: IncomingOrder, request: Request):
-    # 1. Валидация обязательных полей
+    # 1. Валидация
     if not order.consents.policyAccepted:
         raise HTTPException(status_code=400, detail="Нет согласия на обработку заявки")
-
     if not order.order.items:
         raise HTTPException(status_code=400, detail="Корзина пуста")
-
     if not order.customer.name.strip():
         raise HTTPException(status_code=400, detail="Не указано имя")
-
     if not order.customer.phone.strip():
         raise HTTPException(status_code=400, detail="Не указан телефон")
-
     if not order.order.pickupType:
         raise HTTPException(status_code=400, detail="Не указан способ получения")
 
     validate_order_totals(order)
-
     await enforce_order_rate_limit(_client_ip(request))
 
     # 2. Генерируем ID
     order_id = generate_order_id()
 
-    # 3. Сохраняем заказ в файл (до VK — чтобы не потерять при сбое уведомления)
+    # 3. Сохраняем заказ в файл
     await persist_order_to_file(order_id, order)
 
     if YANDEX_DISK_TOKEN:
@@ -331,13 +303,11 @@ async def create_order(order: IncomingOrder, request: Request):
 
     admin_text = build_admin_message(order_id, order)
 
+    # 4. Отправляем уведомление в Telegram
     try:
-        if ADMIN_VK_PEER_ID > 0:
-            await send_vk_message(ADMIN_VK_PEER_ID, admin_text)
-        else:
-            print("[INFO] ADMIN_VK_PEER_ID не задан, сообщение админу не отправлено.")
+        await send_telegram_message(ADMIN_TELEGRAM_ID, admin_text)
     except Exception as exc:
-        print("[VK SEND ERROR]", exc)
+        print("[TG SEND ERROR]", exc)
 
     return OutgoingResponse(
         status="success",
