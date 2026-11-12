@@ -805,32 +805,21 @@ async function loadMenu() {
 
 // --- ИНТЕГРАЦИЯ С TELEGRAM ---
 function initTelegramWebApp() {
-  // Проверяем, есть ли объект Telegram
   if (window.Telegram && window.Telegram.WebApp) {
     const tg = window.Telegram.WebApp;
-    tg.expand(); // Разворачиваем на весь экран
+    tg.expand();
 
-    // Даем странице полсекунды на загрузку DOM
+    // Пытаемся подставить имя с небольшой задержкой
     setTimeout(() => {
-      if (tg.initDataUnsafe) {
-        // Показываем отладочное окно, чтобы понять, приходят ли данные на телефоне
-        tg.showAlert("Данные от TG: " + JSON.stringify(tg.initDataUnsafe));
+      if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        const user = tg.initDataUnsafe.user;
+        const nameInput = document.getElementById("orderName");
 
-        if (tg.initDataUnsafe.user) {
-          const user = tg.initDataUnsafe.user;
-          const nameInput = document.getElementById("orderName");
-
-          // Подставляем имя, если поле пустое
-          if (nameInput && !nameInput.value) {
-            nameInput.value = user.first_name || "";
-          }
+        if (nameInput && !nameInput.value) {
+          nameInput.value = user.first_name || "";
         }
-      } else {
-        tg.showAlert("Telegram не передал данные (initDataUnsafe пуст)");
       }
     }, 500);
-  } else {
-    console.log("Открыто не в Telegram");
   }
 }
 
